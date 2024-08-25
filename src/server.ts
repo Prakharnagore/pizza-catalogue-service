@@ -1,17 +1,17 @@
+import config from "config";
 import app from "./app";
-import { Config } from "./config";
 import logger from "./config/logger";
 
 const startServer = () => {
-    const PORT = Config.PORT;
+    const PORT: number = config.get("server.port") || 5502;
     try {
         app.listen(PORT, () => logger.info(`Listening on ${PORT}`));
     } catch (err: unknown) {
         if (err instanceof Error) {
             logger.error(err.message);
-            setTimeout(() => {
+            logger.on("finish", () => {
                 process.exit(1);
-            }, 1000);
+            });
         }
     }
 };
