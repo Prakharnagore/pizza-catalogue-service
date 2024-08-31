@@ -6,18 +6,20 @@ import { asyncWrapper } from "../common/utils/wrapper";
 import authenticate from "../common/middleware/authenticate";
 import { canAccess } from "../common/middleware/canAccess";
 import { Roles } from "../common/constants";
+import fileUpload from "express-fileupload";
 
 // import logger from "../config/logger";
 
 const router = express.Router();
 
 const productService = new ProductService();
-const productController = new ProductController();
+const productController = new ProductController(productService);
 
 router.post(
     "/",
     authenticate,
     canAccess([Roles.ADMIN]),
+    fileUpload(),
     createProductValidator,
     asyncWrapper(productController.create),
 );

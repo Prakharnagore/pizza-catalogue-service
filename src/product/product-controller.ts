@@ -1,13 +1,46 @@
 import { NextFunction, Request, Response } from "express";
 import { validationResult } from "express-validator";
 import createHttpError from "http-errors";
+import { ProductService } from "./product-service";
+import { Product } from "./product-types";
 
 export class ProductController {
-    async create(req: Request, res: Response, next: NextFunction) {
+    constructor(private productService: ProductService) {}
+    create = async (req: Request, res: Response, next: NextFunction) => {
         const result = validationResult(req);
         if (!result.isEmpty()) {
             return next(createHttpError(400, result.array()[0].msg as string));
         }
-        res.json({});
-    }
+        // create product
+        // image upload
+        // save product to db
+        const {
+            name,
+            description,
+            priceConfiguration,
+            attributes,
+            tenantId,
+            categoryId,
+            isPublish,
+        } = req.body;
+
+        const product = {
+            name,
+            description,
+            priceConfiguration: JSON.parse(priceConfiguration as string),
+            attributes: JSON.parse(attributes as string),
+            tenantId,
+            categoryId,
+            isPublish,
+            image: "image.jpg",
+        };
+
+        // todo: add proper req body types
+        const newProduct = await this.productService.createProduct(
+            product as unknown as Product,
+        );
+
+        // send response
+        res.json({ id: newProduct._id });
+    };
 }
