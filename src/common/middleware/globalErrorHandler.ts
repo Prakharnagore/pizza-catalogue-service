@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from "express";
 import { HttpError } from "http-errors";
-import logger from "../../config/logger";
 import { v4 as uuidv4 } from "uuid";
+import { NextFunction, Request, Response } from "express";
+import logger from "../../config/logger";
 
 export const globalErrorHandler = (
     err: HttpError,
@@ -11,14 +11,15 @@ export const globalErrorHandler = (
     next: NextFunction,
 ) => {
     const errorId = uuidv4();
-    const statusCode = err.statusCode || err.status || 500;
 
+    const statusCode = err.status || 500;
     const isProduction = process.env.NODE_ENV === "production";
-    const message = isProduction ? "Internal server error" : err.message;
+    const message = isProduction
+        ? `An unexpected error occurred.`
+        : err.message;
 
     logger.error(err.message, {
         id: errorId,
-        statusCode,
         error: err.stack,
         path: req.path,
         method: req.method,
@@ -31,7 +32,6 @@ export const globalErrorHandler = (
                 type: err.name,
                 msg: message,
                 path: req.path,
-                method: req.method,
                 location: "server",
                 stack: isProduction ? null : err.stack,
             },
