@@ -1,3 +1,4 @@
+import { paginationLabels } from "../config/pagination";
 import productModel from "./product-model";
 import { Filter, PaginateQuery, Product } from "./product-types";
 
@@ -63,10 +64,7 @@ export class ProductService {
 
         return productModel.aggregatePaginate(aggregate, {
             ...paginateQuery,
+            customLabels: paginationLabels,
         });
-
-        const result = await aggregate.exec();
-
-        return result as Product[];
     }
 }
