@@ -1,9 +1,9 @@
 import productModel from "./product-model";
-import { Filter, Product } from "./product-types";
+import { Filter, PaginateQuery, Product } from "./product-types";
 
 export class ProductService {
     async createProduct(product: Product) {
-        return await productModel.create(product);
+        return (await productModel.create(product)) as Product;
     }
 
     async getProduct(productId: string): Promise<Product | null> {
@@ -22,7 +22,11 @@ export class ProductService {
         )) as Product;
     }
 
-    async getProducts(q: string, filters: Filter) {
+    async getProducts(
+        q: string,
+        filters: Filter,
+        paginateQuery: PaginateQuery,
+    ) {
         const searchQueryRegexp = new RegExp(q, "i");
 
         const matchQuery = {
@@ -56,6 +60,10 @@ export class ProductService {
                 $unwind: "$category",
             },
         ]);
+
+        return productModel.aggregatePaginate(aggregate, {
+            ...paginateQuery,
+        });
 
         const result = await aggregate.exec();
 

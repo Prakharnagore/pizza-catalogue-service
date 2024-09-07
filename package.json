@@ -24,6 +24,7 @@
         "@types/express-fileupload": "^1.5.1",
         "@types/http-errors": "^2.0.4",
         "@types/jest": "^29.5.12",
+        "@types/mongoose-aggregate-paginate-v2": "^1.0.12",
         "@types/node": "^20.11.30",
         "@types/supertest": "^6.0.2",
         "@types/uuid": "^10.0.0",
@@ -63,6 +64,7 @@
         "js-yaml": "^4.1.0",
         "jwks-rsa": "^3.1.0",
         "mongoose": "^8.5.4",
+        "mongoose-aggregate-paginate-v2": "^1.1.2",
         "uuid": "^10.0.0",
         "winston": "^3.12.0"
     }
