@@ -1,4 +1,5 @@
 import config from "config";
+import cors from "cors";
 import express from "express";
 import { globalErrorHandler } from "./common/middleware/globalErrorHandler";
 import categoryRouter from "./category/category-router";
@@ -8,6 +9,11 @@ import cookieParser from "cookie-parser";
 const app = express();
 
 // middleware
+app.use(
+    cors({
+        origin: "*",
+    }),
+);
 app.use(express.json());
 app.use(cookieParser());
 
