@@ -2,18 +2,21 @@ import { NextFunction, Request, Response } from "express";
 import { validationResult } from "express-validator";
 import createHttpError from "http-errors";
 import { ProductService } from "./product-service";
-import { Filter, Product } from "./product-types";
+import { Filter, Product, ProductEvents } from "./product-types";
 import { FileStorage } from "../common/types/storage";
 import { v4 as uuidv4 } from "uuid";
 import { UploadedFile } from "express-fileupload";
 import { AuthRequest } from "../common/types";
 import { Roles } from "../common/constants";
 import mongoose from "mongoose";
+import { MessageProducerBroker } from "../common/types/broker";
+import { mapToObject } from "../utils";
 
 export class ProductController {
     constructor(
         private productService: ProductService,
         private storage: FileStorage,
+        private broker: MessageProducerBroker,
     ) {}
     create = async (req: Request, res: Response, next: NextFunction) => {
         const result = validationResult(req);
@@ -53,6 +56,25 @@ export class ProductController {
         // todo: add proper req body types
         const newProduct = await this.productService.createProduct(
             product as unknown as Product,
+        );
+
+        // Send product to kafka.
+        // todo: move topic name to the config
+
+        await this.broker.sendMessage(
+            "product",
+            JSON.stringify({
+                event_type: ProductEvents.PRODUCT_CREATE,
+                data: {
+                    id: newProduct._id,
+                    priceConfiguration: mapToObject(
+                        newProduct.priceConfiguration as unknown as Map<
+                            string,
+                            unknown
+                        >,
+                    ),
+                },
+            }),
         );
 
         // send response
@@ -123,7 +145,28 @@ export class ProductController {
             image: imageName ? imageName : (oldImage as string),
         };
 
-        await this.productService.updateProduct(productId, productToUpdate);
+        const updatedProduct = await this.productService.updateProduct(
+            productId,
+            productToUpdate,
+        );
+
+        // Send product to kafka.
+        // todo: move topic name to the config
+        await this.broker.sendMessage(
+            "product",
+            JSON.stringify({
+                event_type: ProductEvents.PRODUCT_UPDATE,
+                data: {
+                    id: updatedProduct._id,
+                    priceConfiguration: mapToObject(
+                        updatedProduct.priceConfiguration as unknown as Map<
+                            string,
+                            unknown
+                        >,
+                    ),
+                },
+            }),
+        );
 
         res.json({ id: productId });
     };
