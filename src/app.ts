@@ -1,6 +1,6 @@
+import express, { Request, Response } from "express";
 import config from "config";
 import cors from "cors";
-import express from "express";
 import cookieParser from "cookie-parser";
 import { globalErrorHandler } from "./common/middleware/globalErrorHandler";
 import categoryRouter from "./category/category-router";
@@ -8,25 +8,27 @@ import productRouter from "./product/product-router";
 import toppingRouter from "./topping/topping-router";
 
 const app = express();
+const ALLOWED_DOMAINS = [
+    config.get("frontend.clientUI"),
+    config.get("frontend.adminUI"),
+];
 
-// middleware
 app.use(
     cors({
-        origin: "*",
+        origin: ALLOWED_DOMAINS as string[],
     }),
 );
 app.use(express.json());
 app.use(cookieParser());
 
-// routes
-app.get("/", async (req, res) => {
-    res.json({ message: config.get("server.port") });
+app.get("/", (req: Request, res: Response) => {
+    res.json({ message: "Hello from catalog service!" });
 });
+
 app.use("/categories", categoryRouter);
 app.use("/products", productRouter);
 app.use("/toppings", toppingRouter);
 
-// error handler
 app.use(globalErrorHandler);
 
 export default app;
